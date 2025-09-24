@@ -1,0 +1,144 @@
+#include<iostream>
+#include<limits.h> // for INT_MAX
+using namespace std;
+
+struct sjf {
+    int burst, arrival, id, completion, waiting, turnaround, response, priority;
+    bool active;
+};
+
+sjf meh[30];
+
+class lesgo {
+public:
+    int n;
+
+    void priorityIn() {
+        cout << "\nEnter number of processes: ";
+        cin >> n;
+        for (int i = 1; i <= n; i++) {
+            cout << "\nEnter arrival time of P" << i << ": ";
+            cin >> meh[i].arrival;
+            cout << "\nEnter burst time of P" << i << ": ";
+            cin >> meh[i].burst;
+            cout << "\nEnter priority of P" << i << ": ";
+            cin >> meh[i].priority;
+            meh[i].id = i;
+            meh[i].active = false;
+        }
+        cout << "\n  | Arrival | Burst | Priority\n";
+        for (int j = 1; j <= n; j++) {
+            cout << "P" << j << " | " << meh[j].arrival << "       | " << meh[j].burst << " | " << meh[j].priority << "\n";
+        }
+    }
+
+    void priorityProcess() {
+        int k = 0; // Current time
+        int completed = 0; // Number of completed processes
+
+        while (completed < n) {
+            int highestPriority = INT_MAX;
+            int selectedProcess = -1;
+
+            // Find the process with the highest priority (smallest priority number) that has arrived and is not completed
+            for (int i = 1; i <= n; i++) {
+                if (meh[i].arrival <= k && !meh[i].active && meh[i].priority < highestPriority) {
+                    highestPriority = meh[i].priority;
+                    selectedProcess = i;
+                }
+            }
+
+            if (selectedProcess != -1) {
+                // Mark the process as active
+                meh[selectedProcess].active = true;
+
+                // If the process is starting now, calculate response time
+                if (meh[selectedProcess].response == 0) {
+                    meh[selectedProcess].response = k - meh[selectedProcess].arrival;
+                }
+
+                // Execute the process
+                k += meh[selectedProcess].burst;
+                meh[selectedProcess].completion = k;
+                meh[selectedProcess].turnaround = meh[selectedProcess].completion - meh[selectedProcess].arrival;
+                meh[selectedProcess].waiting = meh[selectedProcess].turnaround - meh[selectedProcess].burst;
+
+                completed++;
+            } else {
+                // If no process is ready to run, just increment time
+                k++;
+            }
+        }
+    }
+
+    void displayMetrics() {
+        double totalWaiting = 0, totalTurnaround = 0, totalCompletion = 0;
+
+        cout << "\n\n  | Completion time | Waiting time | Turnaround time | Response time\n";
+        for (int j = 1; j <= n; j++) {
+            totalWaiting += meh[j].waiting;
+            totalTurnaround += meh[j].turnaround;
+            totalCompletion += meh[j].completion;
+            cout << "P" << j << " | " << meh[j].completion
+                 << "             | " << meh[j].waiting
+                 << "             | " << meh[j].turnaround
+                 << "             | " << meh[j].response << "\n";
+        }
+
+        cout << "\nAverage completion time: " << totalCompletion / n;
+        cout << "\nAverage waiting time: " << totalWaiting / n;
+        cout << "\nAverage turnaround time: " << totalTurnaround / n;
+    }
+};
+
+int main() {
+    lesgo obj;
+    obj.priorityIn();
+    obj.priorityProcess();
+    obj.displayMetrics();
+    return 0;
+}
+OUTPUT
+
+Enter number of processes: 4
+
+Enter arrival time of P1: 0
+
+Enter burst time of P1: 6
+
+Enter priority of P1: 0
+
+Enter arrival time of P2: 4
+
+Enter burst time of P2: 10
+
+Enter priority of P2: 0
+
+Enter arrival time of P3: 4
+
+Enter burst time of P3: 4
+
+Enter priority of P3: 0
+
+Enter arrival time of P4: 8
+
+Enter burst time of P4: 3
+
+Enter priority of P4: 0
+
+  | Arrival | Burst | Priority
+P1 | 0       | 6 | 0
+P2 | 4       | 10 | 0
+P3 | 4       | 4 | 0
+P4 | 8       | 3 | 0
+
+
+  | Completion time | Waiting time | Turnaround time | Response time
+P1 | 6             | 0             | 6             | 0
+P2 | 16             | 2             | 12             | 2
+P3 | 20             | 12             | 16             | 12
+P4 | 23             | 12             | 15             | 12
+
+Average completion time: 16.25
+Average waiting time: 6.5
+Average turnaround time: 12.25
